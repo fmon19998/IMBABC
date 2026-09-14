@@ -43,7 +43,7 @@ export default function Register(){
       <label htmlFor="password">Kata sandi</label><Input id="password" type="password" minLength={8} autoComplete="new-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Minimal 8 karakter"/>
       <Button type="submit" className="gradient-button auth-submit" disabled={busy}>{busy?"Memproses...":"Daftar"}<ArrowRight size={17}/></Button>
     </form>
-    <div className="auth-divider">atau</div><Button type="button" variant="outline" className="auth-google" onClick={google}>Daftar dengan Google</Button>
+    {process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED==="true"&&<><div className="auth-divider">atau</div><Button type="button" variant="outline" className="auth-google" onClick={google}>Daftar dengan Google</Button></>}
     {error&&<p className="form-error" role="alert">{error}</p>}{notice&&<p className="form-notice" role="status">{notice}</p>}
     <p className="auth-bottom">Sudah punya akun? <Link href="/login">Masuk</Link></p>
   </div><aside className="auth-aside"><div><span className="eyebrow">MULAI TANPA DATA CONTOH</span><h2>Workspace milik bisnis Anda sendiri.</h2><p>Tidak ada perusahaan atau pesan palsu. Anda memutuskan kapan akun WhatsApp terhubung.</p></div></aside></main>;

@@ -37,7 +37,7 @@ export default function Login() {
       <label htmlFor="password">Kata sandi</label><Input id="password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Kata sandi Anda"/>
       <Button type="submit" className="gradient-button auth-submit" disabled={busy}>{busy?"Memproses...":"Masuk"}<ArrowRight size={17}/></Button>
     </form>
-    <div className="auth-divider">atau</div><Button type="button" variant="outline" className="auth-google" onClick={google}>Lanjutkan dengan Google</Button>
+    {process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED==="true"&&<><div className="auth-divider">atau</div><Button type="button" variant="outline" className="auth-google" onClick={google}>Lanjutkan dengan Google</Button></>}
     {error&&<p className="form-error" role="alert">{error}</p>}
     <p className="auth-bottom">Belum punya akun? <Link href="/register">Daftar sekarang</Link></p>
   </div><aside className="auth-aside"><div><span className="eyebrow">IMBABC</span><h2>Komunikasi bisnis yang lebih tertata.</h2><p>Workspace, koneksi resmi, kontak, template, dan broadcast dengan langkah yang jelas.</p></div></aside></main>;

@@ -32,6 +32,7 @@ export default function DashboardPage(){
   const [contacts,setContacts]=useState<Contact[]>([]);const [campaigns,setCampaigns]=useState<Campaign[]>([]);
   const [templates,setTemplates]=useState<Template[]>([]);const [connection,setConnection]=useState<Connection|null>(null);
   const [workerOnline,setWorkerOnline]=useState(false);
+  const [backendConfigured,setBackendConfigured]=useState(true);
   const [wabaId,setWabaId]=useState("");const [phoneId,setPhoneId]=useState("");const [accessToken,setAccessToken]=useState("");
   const [templateId,setTemplateId]=useState("");const [selectedCampaign,setSelectedCampaign]=useState("");
   const [campaignStatus,setCampaignStatus]=useState<CampaignStatus|null>(null);
@@ -51,8 +52,11 @@ export default function DashboardPage(){
     try{const [data,worker]=await Promise.all([
       apiRequest<{connection:Connection|null}>(`/api/meta/connection?organizationId=${organizationId}`),
       apiRequest<{online:boolean}>(`/api/worker/status?organizationId=${organizationId}`)
-    ]);setConnection(data.connection);setWorkerOnline(worker.online)}
-    catch(e){setError(e instanceof Error?e.message:"Layanan backend belum tersedia")}
+    ]);setConnection(data.connection);setWorkerOnline(worker.online);setBackendConfigured(true)}
+    catch(e){const message=e instanceof Error?e.message:"Layanan backend belum tersedia";
+      if(message==="Backend Supabase belum dikonfigurasi"){
+        setBackendConfigured(false);setConnection(null);setWorkerOnline(false);
+      }else setError(message)}
   },[]);
   async function apiRequest<T>(url:string,body?:object):Promise<T>{
     const db=getSupabase();if(!db)throw new Error("Database belum dikonfigurasi");
@@ -178,6 +182,7 @@ export default function DashboardPage(){
       <main className="app-main">
         {!ready?<p>Memuat workspace...</p>:<>
           {preview&&<div className="setup-warning"><ShieldCheck size={20}/><div><strong>Pratinjau struktur IMBABC</strong><p>Database belum terhubung. Pendaftaran, penyimpanan data, dan pengiriman belum aktif. <Link href="/setup">Buka langkah aktivasi</Link>.</p></div></div>}
+          {!preview&&!backendConfigured&&<div className="setup-warning"><ShieldCheck size={20}/><div><strong>Akun dan data dasar sudah aktif</strong><p>Kontak dan draft tersimpan di database IMBABC. Koneksi Meta, sinkronisasi template, dan pengiriman masih menunggu kunci backend serta worker. <Link href="/setup">Lihat langkah berikutnya</Link>.</p></div></div>}
           {error&&<div className="form-error" role="alert">{error}</div>}{notice&&<div className="form-notice" role="status">{notice}</div>}
           {!preview&&!orgId?<section className="workspace-create"><span className="eyebrow">LANGKAH PERTAMA</span><h1>Buat workspace bisnis Anda</h1><p>Setiap bisnis mendapat ruang data sendiri. Nama perusahaan akan menjadi nama workspace pertama.</p><form onSubmit={createWorkspace}><label htmlFor="company">Nama perusahaan</label><div><Input id="company" value={company} onChange={e=>setCompany(e.target.value)} required minLength={2} maxLength={100} placeholder="Nama bisnis Anda"/><Button type="submit" className="gradient-button" disabled={busy}>Buat workspace <ArrowRight size={16}/></Button></div></form></section>:
           <>
