@@ -12,13 +12,13 @@ const features = [
 ];
 
 export default function Home() {
-  const startHref = isSupabaseConfigured ? "/register" : "/setup";
+  const startHref = isSupabaseConfigured ? "/agen/login" : "/setup";
   const setupAnchors = ["workspace", "meta", "whatsapp", "template", "kontak", "broadcast", "pengiriman"];
   return <div className="site">
     <header className="public-nav wrap">
       <Link href="/" className="logo-lockup" aria-label="Beranda IMBABC"><Image src="/imbabc-logo.png" alt="IMBABC" width={180} height={180} priority /></Link>
       <nav className="public-links" aria-label="Navigasi utama">
-        <a href="#fitur">Fitur</a><a href="#cara-kerja">Cara kerja</a><Link href="/login">Masuk</Link>
+        <a href="#fitur">Fitur</a><a href="#cara-kerja">Cara kerja</a><Link href="/agen/login">Masuk</Link>
         <Button asChild className="gradient-button"><Link href={startHref}>Mulai sekarang <ArrowRight size={16}/></Link></Button>
       </nav>
     </header>

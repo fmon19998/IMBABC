@@ -15,7 +15,15 @@ The app places no arbitrary IMBABC cap on campaign recipients. Meta messaging li
 
 ## Current deployment status
 
-The hosted Site now has a **dedicated IMBABC Supabase project and its phase 1/2 schema**. The browser URL and publishable key are configured separately from the backend secret key. Email signup is limited to pre-authorized organization addresses until custom SMTP is configured. Add `https://imbabc.mrchongno1.chatgpt.site/dashboard` to Supabase Auth's allowed redirect URLs and set the Site URL to `https://imbabc.mrchongno1.chatgpt.site` before using email confirmations. Google buttons remain hidden until Google OAuth is actually enabled. The `Mulai sekarang` links and seven setup steps navigate into the app; the dashboard distinguishes basic database features from the remaining backend integration. **Message sending is still inactive** until a server-side Supabase secret key, Meta credentials, webhook and sender worker are configured. Meta Embedded Signup for onboarding third-party business customers is not implemented; the direct WABA connection above is for an owner who controls official Meta credentials. Inbox, automation, AI, billing, team permissions and full reporting remain later work.
+- Super admin portal: `/admin/login`; one-time owner activation: `/admin/aktivasi`.
+- Separate agent portal: `/agen/login` and `/agen`. Super admin creates agent accounts and isolated workspaces. Public registration is disabled. These are separate portals under one Site origin, not independent domains.
+- Protected Supabase Edge Function `imbabc-api` handles account management and the existing Meta APIs. Every protected request checks the current Auth user and database role; webhook requests require HMAC; initial activation requires a single-use random secret.
+- The owner activation code is delivered privately, never committed or included in a source ZIP.
+- Configure Meta App Secret, Graph API version and webhook verification token in the admin portal. Agents then connect their WABA/phone/token and sync approved templates.
+- Broadcast drafts support a one-contact test or all opted-in recipients. Scheduled cloud sender processes up to 3 recipients per minute initially; it starts after Meta settings are complete. No message has been sent or verified against a real Meta account yet.
+- Agent deactivation blocks browser/backend access and suppresses unsent queue entries. A request already in flight at Meta cannot be recalled.
+- The Site retains owner-private hosting access. External agents also need hosting access or an explicitly public login site. App login itself does not change Site sharing.
+- Templates currently support approved static text, without media or variables. Meta Embedded Signup, inbox and Botcake feature parity are not implemented.
 
 ## Production setup
 
@@ -47,3 +55,9 @@ pnpm build
 ```
 
 Worker tests exercise the official template payload, ambiguous API outcomes, opt-out expressions, and AES-GCM interoperability. Without a dedicated Supabase project and Meta test WABA, full end-to-end sending and SQL/RLS integration cannot be verified yet.
+
+## Cloud deployment
+
+Apply `db/phase3.sql` after phase 2, then `db/phase4-cloud-worker.sql` (change its project URL for another deployment). Run `node scripts/package-edge.mjs` to package Edge Function source. Deploy as `imbabc-api` with entrypoint `index.ts`, import map `deno.json` and `verify_jwt=false`; the function explicitly authenticates each protected route. Default server keys remain in the Edge runtime. Runtime settings are service-role-only with RLS and no client grants.
+
+The standalone Node worker remains available as an alternative. Do not run extra workers solely to bypass Meta rate limits. No secret values are stored in source.

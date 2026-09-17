@@ -2,7 +2,7 @@ import { NextRequest,NextResponse } from "next/server";
 import { z } from "zod";
 import { requireOwner,safeError } from "@/lib/server/auth";
 
-const input=z.object({organizationId:z.string().uuid(),campaignId:z.string().uuid(),templateId:z.string().uuid()}).strict();
+const input=z.object({organizationId:z.string().uuid(),campaignId:z.string().uuid(),templateId:z.string().uuid(),contactId:z.string().uuid().optional()}).strict();
 export async function POST(request:NextRequest){
   try{
     const body=input.parse(await request.json());
@@ -14,7 +14,7 @@ export async function POST(request:NextRequest){
       .select("id").eq("id",body.campaignId).eq("organization_id",body.organizationId).maybeSingle();
     if(campaignError||!campaign)throw new Error("Campaign tidak tersedia");
     const {data,error}=await db.rpc("launch_campaign",{
-      p_campaign_id:body.campaignId,p_owner_id:user.id,p_template_id:body.templateId});
+      p_campaign_id:body.campaignId,p_owner_id:user.id,p_template_id:body.templateId,p_contact_id:body.contactId||null});
     if(error)throw error;
     return NextResponse.json({queued:data});
   }catch(error){return NextResponse.json({error:safeError(error)},{status:400})}

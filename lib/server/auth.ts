@@ -8,16 +8,21 @@ export function adminDb() {
   return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
 }
 
-export async function requireOwner(request:NextRequest,organizationId:string){
+export async function requireAccount(request:NextRequest,role?:string){
   const bearer=request.headers.get("authorization")?.match(/^Bearer (.+)$/i)?.[1];
   if(!bearer)throw new Error("Masuk ke akun terlebih dahulu");
   const db=adminDb();
   const {data:{user},error}=await db.auth.getUser(bearer);
   if(error||!user)throw new Error("Sesi tidak valid");
-  const {data:organization,error:orgError}=await db.from("organizations")
-    .select("id").eq("id",organizationId).eq("owner_id",user.id).maybeSingle();
+  const {data:profile,error:profileError}=await db.from("account_profiles").select("user_id,email,name,role,active").eq("user_id",user.id).maybeSingle();
+  if(profileError||!profile?.active||(role&&profile.role!==role))throw new Error("Akses akun tidak diizinkan");
+  return {db,user,profile};
+}
+export async function requireOwner(request:NextRequest,organizationId:string){
+  const {db,user,profile}=await requireAccount(request,"AGENT");
+  const {data:organization,error:orgError}=await db.from("organizations").select("id").eq("id",organizationId).eq("owner_id",user.id).maybeSingle();
   if(orgError||!organization)throw new Error("Workspace tidak tersedia untuk akun ini");
-  return {db,user};
+  return {db,user,profile};
 }
 
 export function safeError(error:unknown){

@@ -57,3 +57,5 @@
 .setup-step:target{outline:3px solid #5195ec;outline-offset:2px}
 .setup-finish{display:flex;gap:16px;align-items:start;padding:26px;background:#112c64;border-radius:16px;margin-top:19px;color:#fff}.setup-finish>svg{flex:none}.setup-finish>svg:last-child{margin-left:auto}.setup-finish h2{font-size:19px;margin:0 0 8px}.setup-finish p{font-size:14px;line-height:1.6;margin:0;color:#d9e7ff}
 @media(max-width:640px){.setup-container{padding-top:20px}.setup-finish>svg:last-child{display:none}.setup-step{padding:18px}}
+
+.admin-portal{max-width:1440px;margin:auto}.admin-portal>.content-panel{margin-top:24px}.admin-portal code{overflow-wrap:anywhere}.admin-portal .form-stack{max-width:540px}

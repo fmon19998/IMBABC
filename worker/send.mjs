@@ -3,8 +3,8 @@ import { createDecipheriv } from "node:crypto";
 
 const url=process.env.SUPABASE_URL;
 const key=process.env.SUPABASE_SECRET_KEY||process.env.SUPABASE_SERVICE_ROLE_KEY;
-const cryptoKey=process.env.TOKEN_ENCRYPTION_KEY;
-const graphVersion=process.env.META_GRAPH_API_VERSION;
+
+
 const rate=Number(process.env.SEND_RATE_PER_SECOND||2);
 const rest=Number(process.env.WORKER_IDLE_MS||2000);
 
@@ -47,7 +47,9 @@ async function sendOne(db,recipient){
   if(campaign.error||connection.error||contact.error){
     await mark(db,recipient,{status:"UNKNOWN",error_code:"STATE_LOOKUP_FAILED"});return;
   }
-  if(campaign.data.status!=="RUNNING"||contact.data.consent_status!=="OPTED_IN"||
+  const owner=await db.from("organizations").select("owner_id").eq("id",recipient.organization_id).single();
+  const profile=owner.data?await db.from("account_profiles").select("active").eq("user_id",owner.data.owner_id).single():null;
+  if(!profile?.data?.active||campaign.data.status!=="RUNNING"||contact.data.consent_status!=="OPTED_IN"||
       contact.data.phone_e164!==recipient.phone_e164){
     await mark(db,recipient,{status:"SUPPRESSED",error_code:"CONSENT_OR_CAMPAIGN_CHANGED"});return;
   }
@@ -56,8 +58,8 @@ async function sendOne(db,recipient){
   catch{await mark(db,recipient,{status:"FAILED",error_code:"INVALID_PAYLOAD"});return}
   let result;
   try{
-    const token=decryptToken(connection.data.access_token_ciphertext,cryptoKey);
-    const response=await fetch(`https://graph.facebook.com/${graphVersion}/${connection.data.phone_number_id}/messages`,{
+    const token=decryptToken(connection.data.access_token_ciphertext,process.env.TOKEN_ENCRYPTION_KEY);
+    const response=await fetch(`https://graph.facebook.com/${process.env.META_GRAPH_API_VERSION}/${connection.data.phone_number_id}/messages`,{
       method:"POST",headers:{authorization:"Bearer "+token,"content-type":"application/json"},
       body:JSON.stringify(body),signal:AbortSignal.timeout(15000)
     });
@@ -143,7 +145,16 @@ async function finishCampaigns(db){
   }
 }
 
+export async function runBatch(db,limit=1){
+  if(!process.env.TOKEN_ENCRYPTION_KEY||!/^v\d{2}\.\d+$/.test(process.env.META_GRAPH_API_VERSION||""))throw new Error("Pengaturan Meta belum lengkap");
+  must(await db.from("worker_heartbeats").upsert({worker_id:"cloud-sender",updated_at:new Date().toISOString()}),"Heartbeat");
+  await recoverStale(db);await processWebhooks(db);
+  const claims=must(await db.rpc("claim_campaign_recipients",{p_limit:limit}),"Ambil antrean");
+  for(const recipient of claims){await sendOne(db,recipient);await wait(500);}
+  await finishCampaigns(db);return {processed:claims.length};
+}
 async function main(){
+  const cryptoKey=process.env.TOKEN_ENCRYPTION_KEY;const graphVersion=process.env.META_GRAPH_API_VERSION;
   if(!url||!key||!cryptoKey||!graphVersion||!/^v\d{2}\.\d+$/.test(graphVersion))
     throw new Error("Konfigurasi Supabase, token encryption, atau versi Meta belum lengkap");
   if(!Number.isFinite(rate)||rate<0.1||rate>20)throw new Error("SEND_RATE_PER_SECOND harus 0.1–20");
