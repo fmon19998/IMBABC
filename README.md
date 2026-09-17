@@ -16,7 +16,7 @@ The app places no arbitrary IMBABC cap on campaign recipients. Meta messaging li
 ## Current deployment status
 
 - Super admin portal: `/admin/login`; one-time owner activation: `/admin/aktivasi`.
-- Separate agent portal: `/agen/login` and `/agen`. Super admin creates agent accounts and isolated workspaces. Public registration is disabled. A companion agent-only Site is hosted at https://imbabc-agen.mrchongno1.chatgpt.site; it omits admin pages and all local server API routes.
+- Separate agent portal: `/agen/login` and `/agen`. Super admin creates agent accounts and isolated workspaces. Public registration is disabled. These are separate portals under one Site origin, not independent domains.
 - Protected Supabase Edge Function `imbabc-api` handles account management and the existing Meta APIs. Every protected request checks the current Auth user and database role; webhook requests require HMAC; initial activation requires a single-use random secret.
 - The owner activation code is delivered privately, never committed or included in a source ZIP.
 - Configure Meta App Secret, Graph API version and webhook verification token in the admin portal. Agents then connect their WABA/phone/token and sync approved templates.

