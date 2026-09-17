@@ -1,8 +1,10 @@
 import process from 'runtime-env';
 import {createClient} from '@supabase/supabase-js';
 
-const cors={'access-control-allow-origin':'https://imbabc.mrchongno1.chatgpt.site','access-control-allow-headers':'authorization,apikey,content-type','access-control-allow-methods':'GET,POST,OPTIONS','vary':'Origin'};
+const corsBase={'access-control-allow-origin':'https://imbabc.mrchongno1.chatgpt.site','access-control-allow-headers':'authorization,apikey,content-type','access-control-allow-methods':'GET,POST,OPTIONS','vary':'Origin'};
 Deno.serve(async req=>{
+ const origin=req.headers.get('origin')||'';
+ const cors={...corsBase,'access-control-allow-origin':['https://imbabc.mrchongno1.chatgpt.site','https://imbabc-agen.mrchongno1.chatgpt.site'].includes(origin)?origin:'https://imbabc.mrchongno1.chatgpt.site'};
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  try{
  const secret=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}').default||Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
